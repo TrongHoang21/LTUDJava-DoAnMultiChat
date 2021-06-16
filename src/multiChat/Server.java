@@ -76,6 +76,15 @@ public class Server
         sendMessage.start();
         readMessage.start();
 
+        //Make server like a client 0 to send and receive msg from clients
+        s = ss.accept();
+        System.out.println("Admin joined" + s);
+        DataInputStream dis2 = new DataInputStream(s.getInputStream());
+        DataOutputStream dos2 = new DataOutputStream(s.getOutputStream());
+        ClientHandler servInstance = new ClientHandler(s,"server", dis2, dos2);
+        ar.add(servInstance);
+        Thread t1 = new Thread(servInstance);
+        t1.start();
 
         //Socket s;
         System.out.println("Waiting for a Client");
@@ -106,6 +115,12 @@ public class Server
             // add this client to active clients list
             ar.add(mtch);
 
+            System.out.println("List");
+            for (ClientHandler mc : Server.ar)
+            {
+                System.out.println(mc.name);
+            }
+
             // start the thread.
             t.start();
 
@@ -121,8 +136,7 @@ public class Server
 // ClientHandler class
 class ClientHandler implements Runnable
 {
-    Scanner scn = new Scanner(System.in);
-    private String name;
+    public final String name;
     final DataInputStream dis;
     final DataOutputStream dos;
     Socket s;
@@ -150,6 +164,7 @@ class ClientHandler implements Runnable
                 received = dis.readUTF();
 
                 System.out.println(received);
+                System.out.println("Receiver is " + this.name);
 
                 if(received.equals("logout")){
                     this.isloggedin=false;
