@@ -23,7 +23,62 @@ public class Server
         // server is listening on port 1234
         ServerSocket ss = new ServerSocket(1234);
 
-        Socket s;
+        // getting localhost ip
+        InetAddress ip = InetAddress.getByName("localhost");
+
+        // establish the connection
+        Socket s = new Socket(ip, 1234);
+        Scanner scn = new Scanner(System.in);
+
+        // obtaining input and out streams
+        DataInputStream dis1 = new DataInputStream(s.getInputStream());
+        DataOutputStream dos1 = new DataOutputStream(s.getOutputStream());
+
+        // sendMessage thread
+        Thread sendMessage = new Thread(new Runnable()
+        {
+            @Override
+            public void run() {
+                while (true) {
+
+                    // read the message to deliver.
+                    String msg = scn.nextLine();
+
+                    try {
+                        // write on the output stream
+                        dos1.writeUTF(msg);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        // readMessage thread
+        Thread readMessage = new Thread(new Runnable()
+        {
+            @Override
+            public void run() {
+
+                while (true) {
+                    try {
+                        // read the message sent to this client
+                        String msg = dis1.readUTF();
+                        System.out.println(msg);
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        sendMessage.start();
+        readMessage.start();
+
+
+        //Socket s;
+        System.out.println("Waiting for a Client");
 
         // running infinite loop for getting
         // client request
@@ -32,7 +87,7 @@ public class Server
             // Accept the incoming request
             s = ss.accept();
 
-            System.out.println("New client request received : " + s);
+            System.out.println("New client arrived : " + s);
 
             // obtain input and output streams
             DataInputStream dis = new DataInputStream(s.getInputStream());
