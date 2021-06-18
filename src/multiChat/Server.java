@@ -78,7 +78,7 @@ public class Server
 
         //Make server like a client 0 to send and receive msg from clients
         s = ss.accept();
-        System.out.println("Admin joined" + s);
+        System.out.println("Admin joined");
         DataInputStream dis2 = new DataInputStream(s.getInputStream());
         DataOutputStream dos2 = new DataOutputStream(s.getOutputStream());
         ClientHandler servInstance = new ClientHandler(s,"server", dis2, dos2);
@@ -96,7 +96,7 @@ public class Server
             // Accept the incoming request
             s = ss.accept();
 
-            System.out.println("New client arrived : " + s);
+
 
             // obtain input and output streams
             DataInputStream dis = new DataInputStream(s.getInputStream());
@@ -114,8 +114,9 @@ public class Server
 
             // add this client to active clients list
             ar.add(mtch);
+            System.out.println(mtch.name + " joined");
 
-            System.out.println("List");
+            System.out.println("Active users list:");
             for (ClientHandler mc : Server.ar)
             {
                 System.out.println(mc.name);
@@ -164,7 +165,7 @@ class ClientHandler implements Runnable
                 received = dis.readUTF();
 
                 System.out.println(received);
-                System.out.println("Receiver is " + this.name);
+                //System.out.println("Receiver is " + this.name);
 
                 if(received.equals("logout")){
                     this.isloggedin=false;
