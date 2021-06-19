@@ -18,62 +18,73 @@ public class Server
 
     // counter for clients
     static int i = 0;
-
+    Thread serverListener;
     ServerInterface mainGUI;
+    private boolean exit;
 
     public Server() throws IOException {
         // server is listening on port 1234
         ServerSocket ss = new ServerSocket(1234);
-
         mainGUI = new ServerInterface(this);
 
-        // running infinite loop for getting client request
-        Socket s;
-        System.out.println("Waiting for a Client");
 
-        while (true)
-        {
-            // Accept the incoming request
+        serverListener = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // running infinite loop for getting client request
+                Socket s = null;
+                System.out.println("Waiting for a Client");
 
-            s = ss.accept();
+                while (true)
+                {
+                    // Accept the incoming request
 
-            // obtain input and output streams
-            DataInputStream dis = new DataInputStream(s.getInputStream());
-            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                    DataInputStream dis = null;
+                    DataOutputStream dos = null;
+                    try {
+                        s = ss.accept();
+                        dis = new DataInputStream(s.getInputStream());
+                        dos = new DataOutputStream(s.getOutputStream());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-            System.out.println("Creating a new handler for this client...");
+                    // obtain input and output streams
 
-            // Create a new handler object for handling this request.
-            ClientHandler mtch = new ClientHandler(s,"client " + i, dis, dos);
 
-            // Create a new Thread with this object.
-            Thread t = new Thread(mtch);
+                    System.out.println("Creating a new handler for this client...");
 
-            System.out.println("Adding this client to active client list");
+                    // Create a new handler object for handling this request.
+                    ClientHandler mtch = new ClientHandler(s,"client " + i, dis, dos);
 
-            // add this client to active clients list
-            ar.add(mtch);
-            System.out.println(mtch.name + " joined");
+                    // Create a new Thread with this object.
+                    Thread t = new Thread(mtch);
 
-            System.out.println("Active users list:");
-            for (ClientHandler mc : Server.ar)
-            {
-                System.out.println(mc.name);
+                    System.out.println("Adding this client to active client list");
+
+                    // add this client to active clients list
+                    ar.add(mtch);
+                    System.out.println(mtch.name + " joined");
+
+                    System.out.println("Active users list:");
+                    for (ClientHandler mc : Server.ar)
+                    {
+                        System.out.println(mc.name);
+                    }
+
+                    // start the thread.
+                    t.start();
+
+                    // increment i for new client.
+                    // i is used for naming only, and can be replaced
+                    // by any naming scheme
+                    i++;
+
+                }
             }
+        });
 
-            // start the thread.
-            t.start();
-
-            // increment i for new client.
-            // i is used for naming only, and can be replaced
-            // by any naming scheme
-            i++;
-
-        }
-
-
-
-
+        serverListener.start();
     }
 
     public static void main(String[] args) throws IOException
@@ -83,6 +94,15 @@ public class Server
 
     public ServerInterface getMainGUI() {
         return mainGUI;
+    }
+
+    public Thread getServerListener() {
+        return serverListener;
+    }
+
+    public void stop()
+    {
+        exit = true;
     }
 
     public ArrayList<String> getCurrentOnlineList() {

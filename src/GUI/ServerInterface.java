@@ -58,6 +58,7 @@ public class ServerInterface extends JFrame{
         sendOnlineListRequest();
 
         //GUI PART
+        btnEnable.setEnabled(false);
         add(panel1);
         setSize(500,500);
         setVisible(true);
@@ -116,6 +117,39 @@ public class ServerInterface extends JFrame{
                     }
 
                 }
+            }
+        });
+
+        btnSendListToAll.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendOnlineListRequest();
+            }
+        });
+
+        btnDisable.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnEnable.setEnabled(true);
+                btnDisable.setEnabled(false);
+                try {
+                    server.getServerListener().wait();
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+
+            }
+        });
+
+        btnEnable.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnEnable.setEnabled(false);
+                btnDisable.setEnabled(true);
+                server.getServerListener().notify();
+
+//                server.switchOnKillingMainThread(false);
+//                server.getServerListener().start();
             }
         });
     }
