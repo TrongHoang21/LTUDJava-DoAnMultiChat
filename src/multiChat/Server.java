@@ -5,6 +5,7 @@ package multiChat;
 // Save file as Server.java
 
 import GUI.ServerInterface;
+import com.vdurmont.emoji.EmojiParser; //https://github.com/Coding/emoji-java
 
 import java.io.*;
 import java.util.*;
@@ -23,6 +24,8 @@ public class Server
     private boolean exit;
 
     public Server() throws IOException {
+
+
         // server is listening on port 1234
         ServerSocket ss = new ServerSocket(1234);
         mainGUI = new ServerInterface(this);

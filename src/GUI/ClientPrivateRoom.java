@@ -1,5 +1,6 @@
 package GUI;
 
+import com.vdurmont.emoji.EmojiParser;
 import multiChat.Client;
 import multiChat.Server;
 
@@ -7,9 +8,13 @@ import javax.swing.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+
+import static java.awt.event.KeyEvent.VK_ENTER;
 
 public class ClientPrivateRoom extends JFrame {
     private JTextArea boxChatLog;
@@ -19,9 +24,11 @@ public class ClientPrivateRoom extends JFrame {
     private JLabel labelDestination;
     private JPanel panel1;
     private JLabel labelSource;
+    private JCheckBox cbEnterToSend;
     private ArrayList<String> listChatLog;
     private String nameDest;
     private String nameSource;
+    ActionListener AL;
 
     public ClientPrivateRoom(String nameDst, String nameSrc, Client c)
     {
@@ -75,10 +82,13 @@ public class ClientPrivateRoom extends JFrame {
         labelDestination.setText("To: " + nameDest);
         labelSource.setText("From: " + nameSrc);
         boxChatLog.setText("");
+        boxMsg.addKeyListener(new MKeyListener(this));
         add(panel1);
         setSize(500,500);
 
-        this.getBtnSend().addActionListener(new ActionListener() {
+
+
+        AL = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //sendMessage.start();
@@ -101,7 +111,11 @@ public class ClientPrivateRoom extends JFrame {
                     listChatLog.add(msg);
                 }
             }
-        });
+        };
+
+
+
+        this.getBtnSend().addActionListener(AL);
 
         this.getBtnBack().addActionListener(new ActionListener() {
             @Override
@@ -212,9 +226,39 @@ public class ClientPrivateRoom extends JFrame {
             @Override
             public void run() {
                 boxChatLog.append("\n");
-                //String resMsg = emoji4j.EmojiUtils.emojify(msg);
-                boxChatLog.append(msg);
+                String result = EmojiParser.parseToUnicode(msg);
+                boxChatLog.append(result);
+
+                //Sample for emoji https://github.com/Coding/emoji-java
+                //String str = "An :grinning:awesome :smiley:string &#128516;with a few :wink:emojis!";
+                //String result = EmojiParser.parseToUnicode(str);
+                //boxChatLog.append(result);
             }
         });
+    }
+
+    public JCheckBox getCbEnterToSend() {
+        return cbEnterToSend;
+    }
+
+    public ActionListener getAL(){
+        return this.AL;
+    }
+
+}
+
+class MKeyListener extends KeyAdapter {
+    ClientPrivateRoom cl;
+    public MKeyListener(ClientPrivateRoom c){
+        cl = c;
+    };
+    @Override
+    public void keyPressed(KeyEvent event) {
+
+        if (event.getKeyCode() == VK_ENTER) {
+            if(cl.getCbEnterToSend().isSelected()) {
+                cl.getAL().actionPerformed(null);
+            }
+        }
     }
 }
