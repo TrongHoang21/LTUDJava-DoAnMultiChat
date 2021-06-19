@@ -5,6 +5,8 @@ package multiChat;
 
 import GUI.ClientOnlineList;
 import GUI.ClientPrivateRoom;
+import GUI.ClientRegister;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -19,7 +21,7 @@ public class Client
     //DATA PROPERTIES
     private static String nameDest = "server";
     private String nameSrc;
-    private static String userName = "NoNam";
+    private static String userName = "";
     private ArrayList<String> currentOnlineList;
     private ArrayList<PartnerInfo> listPartner;
     //NON DATA PROPs
@@ -28,6 +30,7 @@ public class Client
     final static int ServerPort = 1234;
     GUI.ClientOnlineList mainGUI;
     GUI.ClientPrivateRoom roomGUI;
+    GUI.ClientRegister registerGUI;
     Thread readMessage;
 
     public Client(String nameSrc) throws UnknownHostException, IOException{
@@ -49,6 +52,20 @@ public class Client
         dos = new DataOutputStream(s.getOutputStream());
 
         //GUI PART
+        registerGUI = new ClientRegister(this);
+
+        while(registerGUI.getFlag() == false)
+        {
+            registerGUI.getBtnSubmit().addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setUserName(registerGUI.getBoxUsername().getText());
+                    registerGUI.setFlag(true);
+                    registerGUI.dispose();
+                }
+            });
+        }
+
         mainGUI = new ClientOnlineList(this);
         roomGUI = new ClientPrivateRoom(nameDest, nameSrc, this);
 
@@ -108,6 +125,7 @@ public class Client
             }
         });
     }
+
 
     //TOOL FUNCTIONS
     public static void Sender(String msgSent)
@@ -190,6 +208,14 @@ public class Client
                 return;
             }
         }
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserName(){
+        return this.userName;
     }
 
     public ArrayList<String> getCurrentOnlineList() {

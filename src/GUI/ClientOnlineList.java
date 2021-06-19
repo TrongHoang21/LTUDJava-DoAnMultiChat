@@ -20,7 +20,7 @@ public class ClientOnlineList extends JFrame {
     public ClientOnlineList(Client c)
     {
         Client.sendOnlineListRequest();
-        c.sendInfoRequest("noName");
+        c.sendInfoRequest(c.getUserName());
         add(panel1);
         setSize(500,500);
         setVisible(true);
@@ -47,7 +47,7 @@ public class ClientOnlineList extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                labelThisClient.setText("You are " + nameSrc);
+                labelThisClient.setText("You are " + userName + " ("+ nameSrc + ")");
             }
         });
 
