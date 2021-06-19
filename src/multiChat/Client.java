@@ -12,15 +12,20 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+
+
 public class Client
 {
-    final static int ServerPort = 1234;
+    //DATA PROPERTIES
     private static String nameDest = "server";
     private static String nameSrc = "client 0";
     private static String userName = "NoNam";
+    private ArrayList<String> currentOnlineList;
+    private ArrayList<PartnerInfo> listPartner;
+    //NON DATA PROPs
     static DataInputStream dis;
     static DataOutputStream dos;
-    private ArrayList<String> currentOnlineList;
+    final static int ServerPort = 1234;
     GUI.ClientOnlineList mainGUI;
     GUI.ClientPrivateRoom roomGUI;
     Thread readMessage;
@@ -28,6 +33,7 @@ public class Client
     public Client() throws UnknownHostException, IOException{
         //DATA PART
         currentOnlineList = new ArrayList<>();
+        listPartner = new ArrayList<>();
 
         //SOCKET INIT PART
 
@@ -92,7 +98,7 @@ public class Client
                 if (mainGUI.getListOnlineList().getSelectedIndex() != -1) {
                     nameDest = "" + mainGUI.getListOnlineList().getSelectedValue();
                     try {
-                        createPrivateRoom(nameDest);
+                        createPrivateRoom(nameDest, nameSrc);
                     } catch (InterruptedException interruptedException) {
                         interruptedException.printStackTrace();
                     }
@@ -140,7 +146,6 @@ public class Client
 
     public void handleInfoRequest(String content)
     {
-        System.out.println("tui vao ne " + content);
         StringTokenizer st = new StringTokenizer(content, "_");
 
         while(st.hasMoreTokens())
@@ -152,16 +157,46 @@ public class Client
         mainGUI.updateInfoOnScreen(nameSrc, userName);
     }
 
-    public void createPrivateRoom(String nameDest) throws InterruptedException {
-        roomGUI.setNewDestination(nameDest);
+    public void createPrivateRoom(String nameDest, String nameSrc) throws InterruptedException {
+        roomGUI.setNewNameDest(nameDest);
+        roomGUI.setNewNameSrc(nameSrc);
         roomGUI.setVisible(true);
         mainGUI.setVisible(false);
-        roomGUI.setBoxMsg("");
+        roomGUI.setBoxChatLog("");
+
+        //List chat log for different partners
+        //If exists
+        for (int i = 0; i < listPartner.size(); i++)
+        {
+            if(nameDest.equals(listPartner.get(i).getPartnerName())){
+                roomGUI.preloadChatLog(this);
+                return;
+            }
+        }
+
+        //If not, add new one
+        PartnerInfo p = new PartnerInfo(nameDest, "noName");
+        p.setListChatLog(new ArrayList<String>());
+        listPartner.add(p);
+        roomGUI.preloadChatLog(this);
     }
 
+    public void saveChatLog(String nameDest, ArrayList<String> src){
+        for (int i = 0; i < listPartner.size(); i++)
+        {
+            if(nameDest.equals(listPartner.get(i).getPartnerName())){
+                listPartner.get(i).setListChatLog(src);
+                return;
+            }
+        }
+    }
 
     public ArrayList<String> getCurrentOnlineList() {
         return currentOnlineList;
+    }
+
+    public ArrayList<PartnerInfo> getListPartner() {
+        return listPartner;
     }
 
     public ClientOnlineList getMainGUI() {

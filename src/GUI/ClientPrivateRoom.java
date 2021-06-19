@@ -20,6 +20,7 @@ public class ClientPrivateRoom extends JFrame {
     private ArrayList<String> listChatLog;
     private String msgFromSocket;
     private String nameDest;
+    private String nameSource;
 
     public ClientPrivateRoom(String nameDst, String nameSrc, Client c)
     {
@@ -30,7 +31,6 @@ public class ClientPrivateRoom extends JFrame {
         boxChatLog.setText("");
         add(panel1);
         setSize(500,500);
-
 
         this.getBtnSend().addActionListener(new ActionListener() {
             @Override
@@ -47,6 +47,8 @@ public class ClientPrivateRoom extends JFrame {
                     msg = "Me: " + msg;
                     showMsgOnScreen(msg);
 
+                    //Save data
+                    listChatLog.add(msg);
                 }
             }
         });
@@ -56,10 +58,40 @@ public class ClientPrivateRoom extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 c.getMainGUI().setVisible(true);
+                boxMsg.setText("");
+                boxChatLog.setText("");
+
+                //save data
+                //c.saveChatLog(nameDest, listChatLog);
             }
         });
+    }
 
+    public void preloadChatLog(Client c){
+        //Preload chat log
+        for(int i = 0; i< c.getListPartner().size(); i++) {
+            System.out.println(c.getListPartner().get(i).getPartnerName());
+            if(nameDest.equals(c.getListPartner().get(i).getPartnerName())) {
+                listChatLog = c.getListPartner().get(i).getListChatLog();
+            }
+        }
 
+        String data = "";
+        for(String msg : listChatLog){
+            data += msg;
+            data += "\n";
+        }
+
+        String finalData = data;
+        System.out.println(data);
+
+        boxChatLog.setText("");
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                showMsgOnScreen(finalData);
+            }
+        });
     }
 
     public void solveMessage(String received)
@@ -71,15 +103,23 @@ public class ClientPrivateRoom extends JFrame {
         switch (command){
             case "msg":
                 showMsgOnScreen(content);
+
+                //Save data
+                listChatLog.add(content);
                 break;
         }
 
     }
 
-    public void setNewDestination(String nameDst)
+    public void setNewNameDest(String nameDst)
     {
         labelDestination.setText(nameDst);
         this.nameDest = nameDst;
+    }
+    public void setNewNameSrc(String nameSrc)
+    {
+        labelSource.setText(nameSrc);
+        this.nameSource = nameSrc;
     }
 
     public String getBoxMsg() {
@@ -90,6 +130,10 @@ public class ClientPrivateRoom extends JFrame {
         this.boxMsg.setText(t);
     }
 
+    public void setBoxChatLog(String t) {
+        this.boxChatLog.setText(t);
+    }
+
     public JButton getBtnSend() {
         return btnSend;
     }
@@ -98,8 +142,15 @@ public class ClientPrivateRoom extends JFrame {
         return btnBack;
     }
 
+    public ArrayList<String> getListChatLog() {
+        return listChatLog;
+    }
+
+    public void setListChatLog(ArrayList<String> listChatLog) {
+        this.listChatLog = listChatLog;
+    }
+
     public void showMsgOnScreen(String msg){
-        listChatLog.add(msg);
         SwingUtilities.invokeLater(new Runnable() { //invokeAndWait() is meant to be called from the non-GUI thread
             @Override
             public void run() {
@@ -107,6 +158,5 @@ public class ClientPrivateRoom extends JFrame {
                 boxChatLog.append(msg);
             }
         });
-
     }
 }
