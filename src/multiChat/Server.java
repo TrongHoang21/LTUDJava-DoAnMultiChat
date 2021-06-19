@@ -62,9 +62,22 @@ public class Server
 
                 while (true) {
                     try {
-                        // read the message sent to this client
-                        String msg = dis1.readUTF();
-                        System.out.println(msg);
+                        String received = dis1.readUTF();
+
+                        StringTokenizer st = new StringTokenizer(received, "#");
+                        String command = st.nextToken();
+                        String content = st.nextToken();
+
+                        switch (command){
+                            case "reqList":
+                                //do things
+                                break;
+                            case "msg":
+                                //roomGUI.showMsgOnScreen(content);
+                                System.out.println(content);
+                                break;
+                        }
+
                     } catch (IOException e) {
 
                         e.printStackTrace();
@@ -89,14 +102,11 @@ public class Server
         //Socket s;
         System.out.println("Waiting for a Client");
 
-        // running infinite loop for getting
-        // client request
+        // running infinite loop for getting client request
         while (true)
         {
             // Accept the incoming request
             s = ss.accept();
-
-
 
             // obtain input and output streams
             DataInputStream dis = new DataInputStream(s.getInputStream());
@@ -138,6 +148,7 @@ public class Server
 class ClientHandler implements Runnable
 {
     public final String name;
+    public String userName;
     final DataInputStream dis;
     final DataOutputStream dos;
     Socket s;
@@ -149,6 +160,7 @@ class ClientHandler implements Runnable
         this.dis = dis;
         this.dos = dos;
         this.name = name;
+        this.userName = "";
         this.s = s;
         this.isloggedin=true;
     }
@@ -165,7 +177,6 @@ class ClientHandler implements Runnable
                 received = dis.readUTF();
 
                 System.out.println(received);
-                //System.out.println("Receiver is " + this.name);
 
                 if(received.equals("logout")){
                     this.isloggedin=false;
@@ -175,20 +186,35 @@ class ClientHandler implements Runnable
 
                 // break the string into message and recipient part
                 StringTokenizer st = new StringTokenizer(received, "#");
-                String MsgToSend = st.nextToken();
-                String recipient = st.nextToken();
+                String command = st.nextToken();
 
-                // search for the recipient in the connected devices list.
-                // ar is the vector storing client of active users
-                for (ClientHandler mc : Server.ar)
-                {
-                    // if the recipient is found, write on its
-                    // output stream
-                    if (mc.name.equals(recipient) && mc.isloggedin==true)
-                    {
-                        mc.dos.writeUTF(this.name+" : "+MsgToSend);
-                        break;
+                if(command.equals("msg")) {
+                    String recipient = st.nextToken();
+                    String MsgToSend = st.nextToken();
+
+                    // search for the recipient in the connected devices list.
+                    // ar is the vector storing client of active users
+                    for (ClientHandler mc : Server.ar) {
+                        // if the recipient is found, write on its
+                        // output stream
+                        if (mc.name.equals(recipient) && mc.isloggedin == true) {
+                            mc.dos.writeUTF("msg#" + this.name + ": " + MsgToSend);
+                            break;
+                        }
                     }
+                } else if(command.equals("reqList")) {  //request Online list
+                    String MsgToSend = handleListRequest();
+                    for (ClientHandler mc : Server.ar) {
+                        // if the recipient is found, write on its
+                        // output stream
+                        if (mc.isloggedin == true) {
+                            mc.dos.writeUTF("reqList#" + MsgToSend);
+                        }
+                    }
+                } else if(command.equals("reqInfo")) {  //request Online list
+                    this.userName = st.nextToken();
+                    dos.writeUTF("reqInfo#" + this.name + "_" + this.userName);
+
                 }
             } catch (IOException e) {
 
@@ -196,6 +222,7 @@ class ClientHandler implements Runnable
             }
 
         }
+
         try
         {
             // closing resources
@@ -205,5 +232,15 @@ class ClientHandler implements Runnable
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    public String handleListRequest()
+    {
+        String res = "";
+        for (ClientHandler mc : Server.ar) {
+            res += mc.name + "_";
+        }
+
+        return res;
     }
 }
