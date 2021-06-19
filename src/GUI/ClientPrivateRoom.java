@@ -1,11 +1,13 @@
 package GUI;
 
 import multiChat.Client;
+import multiChat.Server;
 
 import javax.swing.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -18,7 +20,6 @@ public class ClientPrivateRoom extends JFrame {
     private JPanel panel1;
     private JLabel labelSource;
     private ArrayList<String> listChatLog;
-    private String msgFromSocket;
     private String nameDest;
     private String nameSource;
 
@@ -67,10 +68,58 @@ public class ClientPrivateRoom extends JFrame {
         });
     }
 
+    public ClientPrivateRoom(String nameDst, String nameSrc, Server server)
+    {
+        this.nameDest = nameDst;
+        listChatLog = new ArrayList<String>();
+        labelDestination.setText("To: " + nameDest);
+        labelSource.setText("From: " + nameSrc);
+        boxChatLog.setText("");
+        add(panel1);
+        setSize(500,500);
+
+        this.getBtnSend().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //sendMessage.start();
+
+                String msg = getBoxMsg();
+                setBoxMsg("");
+
+                if (!msg.equals("")) {
+                    String msgSent = "msg#" + nameDest + "#" + msg;
+                    try {
+                        server.getMainGUI().getDos().writeUTF(msgSent);
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+
+                    msg = "Me: " + msg;
+                    showMsgOnScreen(msg);
+
+                    //Save data
+                    listChatLog.add(msg);
+                }
+            }
+        });
+
+        this.getBtnBack().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+                server.getMainGUI().setVisible(true);
+                boxMsg.setText("");
+                boxChatLog.setText("");
+
+                //save data
+                //c.saveChatLog(nameDest, listChatLog);
+            }
+        });
+    }
+
     public void preloadChatLog(Client c){
         //Preload chat log
         for(int i = 0; i< c.getListPartner().size(); i++) {
-            System.out.println(c.getListPartner().get(i).getPartnerName());
             if(nameDest.equals(c.getListPartner().get(i).getPartnerName())) {
                 listChatLog = c.getListPartner().get(i).getListChatLog();
             }
@@ -83,7 +132,6 @@ public class ClientPrivateRoom extends JFrame {
         }
 
         String finalData = data;
-        System.out.println(data);
 
         boxChatLog.setText("");
         SwingUtilities.invokeLater(new Runnable() {
@@ -92,6 +140,15 @@ public class ClientPrivateRoom extends JFrame {
                 showMsgOnScreen(finalData);
             }
         });
+    }
+
+    public void preloadChatLogServer(ServerInterface s) {
+        //Preload chat log
+        for (int i = 0; i < s.getListPartner().size(); i++) {
+            if (nameDest.equals(s.getListPartner().get(i).getPartnerName())) {
+                listChatLog = s.getListPartner().get(i).getListChatLog();
+            }
+        }
     }
 
     public void solveMessage(String received)
@@ -155,6 +212,7 @@ public class ClientPrivateRoom extends JFrame {
             @Override
             public void run() {
                 boxChatLog.append("\n");
+                //String resMsg = emoji4j.EmojiUtils.emojify(msg);
                 boxChatLog.append(msg);
             }
         });

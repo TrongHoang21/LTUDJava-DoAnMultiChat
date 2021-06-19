@@ -18,7 +18,7 @@ public class Client
 {
     //DATA PROPERTIES
     private static String nameDest = "server";
-    private static String nameSrc = "client 0";
+    private String nameSrc;
     private static String userName = "NoNam";
     private ArrayList<String> currentOnlineList;
     private ArrayList<PartnerInfo> listPartner;
@@ -30,10 +30,11 @@ public class Client
     GUI.ClientPrivateRoom roomGUI;
     Thread readMessage;
 
-    public Client() throws UnknownHostException, IOException{
+    public Client(String nameSrc) throws UnknownHostException, IOException{
         //DATA PART
         currentOnlineList = new ArrayList<>();
         listPartner = new ArrayList<>();
+        this.nameSrc = nameSrc;
 
         //SOCKET INIT PART
 
@@ -204,7 +205,7 @@ public class Client
     }
 
     public static void main(String args[]) throws IOException {
-        new Client();
+        new Client("client 0");
     }
 }
 
