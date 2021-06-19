@@ -154,6 +154,18 @@ public class ServerInterface extends JFrame{
         });
     }
 
+    public String getNameDest() {
+        return nameDest;
+    }
+
+    public void setNameDest(String nameDest) {
+        this.nameDest = nameDest;
+    }
+
+    public void setNameSrc(String nameSrc){
+        this.nameSrc = nameSrc;
+    }
+
     public void updateOnlineListOnScreen(Server s) {
 
             DefaultListModel<String> l1 = new DefaultListModel<>();

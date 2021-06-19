@@ -33,33 +33,20 @@ public class ClientPrivateRoom extends JFrame {
     public ClientPrivateRoom(String nameDst, String nameSrc, Client c)
     {
         this.nameDest = nameDst;
+        this.nameSource = nameSrc;
         listChatLog = new ArrayList<String>();
-        labelDestination.setText("To: " + nameDest);
-        labelSource.setText("From: " + nameSrc);
-        boxChatLog.setText("");
-        add(panel1);
-        setSize(500,500);
 
-        this.getBtnSend().addActionListener(new ActionListener() {
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                //sendMessage.start();
-
-                String msg = getBoxMsg();
-                setBoxMsg("");
-
-                if (!msg.equals("")) {
-                    String msgSent = "msg#" + nameDest + "#" + msg;
-                    Client.Sender(msgSent);
-
-                    msg = "Me: " + msg;
-                    showMsgOnScreen(msg);
-
-                    //Save data
-                    listChatLog.add(msg);
-                }
+            public void run() {
+                labelDestination.setText("To: " + nameDest);
+                labelSource.setText("From: " + nameSource);
+                boxChatLog.setText("");
             }
         });
+
+        add(panel1);
+        setSize(500,500);
 
         this.getBtnBack().addActionListener(new ActionListener() {
             @Override
@@ -73,15 +60,44 @@ public class ClientPrivateRoom extends JFrame {
                 //c.saveChatLog(nameDest, listChatLog);
             }
         });
+
+        AL = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                    //sendMessage.start();
+
+                    String msg = getBoxMsg();
+                    setBoxMsg("");
+
+                    if (!msg.equals("")) {
+                        String msgSent = "msg#" + nameDest + "#" + msg;
+                        Client.Sender(msgSent);
+
+                        msg = "Me: " + msg;
+                        showMsgOnScreen(msg);
+
+                        //Save data
+                        listChatLog.add(msg);
+                    }
+                }
+            };
+
+        this.getBtnSend().addActionListener(AL);
     }
 
     public ClientPrivateRoom(String nameDst, String nameSrc, Server server)
     {
-        this.nameDest = nameDst;
         listChatLog = new ArrayList<String>();
-        labelDestination.setText("To: " + nameDest);
-        labelSource.setText("From: " + nameSrc);
-        boxChatLog.setText("");
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                labelDestination.setText("To: " + nameDst);
+                labelSource.setText("From: " + nameSrc);
+                boxChatLog.setText("");
+            }
+        });
+
         boxMsg.addKeyListener(new MKeyListener(this));
         add(panel1);
         setSize(500,500);
@@ -97,7 +113,7 @@ public class ClientPrivateRoom extends JFrame {
                 setBoxMsg("");
 
                 if (!msg.equals("")) {
-                    String msgSent = "msg#" + nameDest + "#" + msg;
+                    String msgSent = "msg#" + nameDst + "#" + msg;
                     try {
                         server.getMainGUI().getDos().writeUTF(msgSent);
                     } catch (IOException ioException) {
@@ -184,12 +200,22 @@ public class ClientPrivateRoom extends JFrame {
 
     public void setNewNameDest(String nameDst)
     {
-        labelDestination.setText(nameDst);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                labelDestination.setText(nameDst);
+            }
+        });
         this.nameDest = nameDst;
     }
     public void setNewNameSrc(String nameSrc)
     {
-        labelSource.setText(nameSrc);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                labelSource.setText(nameSrc);
+            }
+        });
         this.nameSource = nameSrc;
     }
 
